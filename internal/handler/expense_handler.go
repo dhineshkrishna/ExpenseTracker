@@ -48,13 +48,7 @@ func (h *ExpenseHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 func (h *ExpenseHandler) Summary(w http.ResponseWriter, r *http.Request) {
 
-	userID := r.URL.Query().Get("user_id")
-	if userID == "" {
-		http.Error(w, "missing user_id", http.StatusBadRequest)
-		return
-	}
-
-	data, err := h.Service.GetSummary(userID)
+	data, err := h.Service.GetSummary()
 	if err != nil {
 		http.Error(w, "failed to fetch summary", http.StatusInternalServerError)
 		return
