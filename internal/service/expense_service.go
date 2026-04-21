@@ -31,6 +31,6 @@ func (s *ExpenseService) CreateExpense(e domain.Expense) (domain.Expense, error)
 func (s *ExpenseService) GetExpenses( category, from, to, sort string) ([]domain.Expense, float64, error) {
 	return s.Repo.Get(category, from, to, sort)
 }
-func (s *ExpenseService) GetSummary(userID string) (map[string]float64, error) {
-	return s.repo.GetSummary(userID)
+func (s *ExpenseService) GetSummary() (map[string]float64, error) {
+	return s.Repo.GetSummary()
 }
