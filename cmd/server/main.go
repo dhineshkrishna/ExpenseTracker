@@ -25,5 +25,37 @@ func main() {
 		}
 	})
 
-	http.ListenAndServe(":8080", nil)
+	// allowed origins (your Netlify frontend)
+	allowed := map[string]bool{
+		"https://exptrackertool.netlify.app": true,
+		"http://localhost:5173":              true,
+	}
+
+	// wrap default mux
+	handler := CORS(allowed)(http.DefaultServeMux)
+
+	http.ListenAndServe(":8080", handler)
+}
+
+func CORS(allowed map[string]bool) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			origin := r.Header.Get("Origin")
+
+			if allowed[origin] {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+			}
+
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+			if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }
