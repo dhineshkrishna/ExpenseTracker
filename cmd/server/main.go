@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"expense-tracker/internal/db"
@@ -18,26 +19,39 @@ func main() {
 	h := &handler.ExpenseHandler{Service: svc}
 
 	http.HandleFunc("/expenses", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "POST" {
+		log.Println("➡️ /expenses hit", r.Method)
+		switch r.Method {
+		case http.MethodPost:
 			h.Create(w, r)
-		} else {
+
+		case http.MethodGet:
 			h.Get(w, r)
+
+		default:
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
-	http.HandleFunc("/expenses/summary", func(w http.ResponseWriter, r *http.Request) {
-	h.Summary(w, r)
-})
 
-	// allowed origins (your Netlify frontend)
+	http.HandleFunc("/expenses/summary", func(w http.ResponseWriter, r *http.Request) {
+
+		log.Println("➡️ /expenses/summary hit", r.Method)
+
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		h.Summary(w, r)
+	})
+
 	allowed := map[string]bool{
 		"https://exptrackertool.netlify.app": true,
 		"http://localhost:5173":              true,
 	}
 
-	// wrap default mux
-	handler := CORS(allowed)(http.DefaultServeMux)
+	corsHandler := CORS(allowed)(http.DefaultServeMux)
 
-	http.ListenAndServe(":8080", handler)
+	http.ListenAndServe(":8080", corsHandler)
 }
 
 func CORS(allowed map[string]bool) func(http.Handler) http.Handler {
@@ -46,14 +60,17 @@ func CORS(allowed map[string]bool) func(http.Handler) http.Handler {
 
 			origin := r.Header.Get("Origin")
 
-			if allowed[origin] {
+			if origin == "" {
+				w.Header().Set("Access-Control-Allow-Origin", "*")
+			} else if allowed[origin] {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
 			}
 
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-			if r.Method == "OPTIONS" {
+			if r.Method == http.MethodOptions {
 				w.WriteHeader(http.StatusOK)
 				return
 			}
