@@ -46,3 +46,20 @@ func (h *ExpenseHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"expenses": expenses,
 	})
 }
+func (h *ExpenseHandler) Summary(w http.ResponseWriter, r *http.Request) {
+
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "missing user_id", http.StatusBadRequest)
+		return
+	}
+
+	data, err := h.Service.GetSummary(userID)
+	if err != nil {
+		http.Error(w, "failed to fetch summary", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
+}
