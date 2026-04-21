@@ -81,7 +81,7 @@ func (r *SQLiteRepo) GetSummary() (map[string]float64, error) {
 		GROUP BY category
 	`
 
-	rows, err := r.DB.Query(query, userID)
+	rows, err := r.DB.Query(query)
 	if err != nil {
 		return nil, err
 	}
