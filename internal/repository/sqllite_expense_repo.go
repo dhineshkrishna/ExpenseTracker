@@ -73,7 +73,7 @@ func (r *SQLiteRepo) Get(category, from, to, sort string) ([]domain.Expense, flo
 
 	return expenses, total, nil
 }
-func (r *SQLiteRepo) GetSummary(userID string) (map[string]float64, error) {
+func (r *SQLiteRepo) GetSummary() (map[string]float64, error) {
 
 	query := `
 		SELECT category, SUM(amount)
