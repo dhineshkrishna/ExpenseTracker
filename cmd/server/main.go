@@ -24,6 +24,9 @@ func main() {
 			h.Get(w, r)
 		}
 	})
+	http.HandleFunc("/expenses/summary", func(w http.ResponseWriter, r *http.Request) {
+	h.Summary(w, r)
+})
 
 	// allowed origins (your Netlify frontend)
 	allowed := map[string]bool{
