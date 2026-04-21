@@ -73,3 +73,33 @@ func (r *SQLiteRepo) Get(category, from, to, sort string) ([]domain.Expense, flo
 
 	return expenses, total, nil
 }
+func (r *SQLiteRepo) GetSummary(userID string) (map[string]float64, error) {
+
+	query := `
+		SELECT category, SUM(amount)
+		FROM expenses
+		GROUP BY category
+	`
+
+	rows, err := r.DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[string]float64)
+
+	for rows.Next() {
+		var category string
+		var total float64
+
+		err := rows.Scan(&category, &total)
+		if err != nil {
+			return nil, err
+		}
+
+		result[category] = total
+	}
+
+	return result, nil
+}
